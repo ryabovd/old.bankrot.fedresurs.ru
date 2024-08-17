@@ -1,4 +1,26 @@
 import requests
+from datetime import date
+import csv
+import ctypes
+import pprint
+import json
+
+
+kernel32 = ctypes.windll.kernel32
+kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
+
+'''
+Colors!
+Write a module and import in future.
+'''
+red_text = '\033[31m'
+green_text = '\033[32m'
+yellow_text = '\033[33m'
+blue_text = '\033[34m'
+white_text_on_blue = '\033[37m\033[44m'
+marked_text = '\033[43m'
+end_text = '\033[0m'
+numbers = white_text_on_blue
 
 
 def build_url(prsnbankruptsId, regionId='95'):
@@ -8,8 +30,15 @@ def build_url(prsnbankruptsId, regionId='95'):
     end_url = "&limit=15&offset=0"
     return start_url + prsnbankruptsId + middle_url + regionId + end_url
 
-def main():
+
+def get_prsnbankruptsId():
+    '''Get Id return Id (str)'''
     prsnbankruptsId = input('Введите ФИО или ИНН или СНИЛС ')
+    return prsnbankruptsId
+
+
+def main():
+    prsnbankruptsId = get_prsnbankruptsId()
     url = build_url(prsnbankruptsId)
     "https://bankrot.fedresurs.ru/backend/prsnbankrupts?searchString=Романов&isActiveLegalCase=true&regionId=95&limit=15&offset=0"
     headers = {
@@ -27,13 +56,83 @@ def main():
         "sec-ch-ua-platform": "Windows"
         }
     response = requests.get(url, headers=headers)
-    print(response.encoding)
+    #print(response.encoding)
     response.encoding = 'utf-8'
-    print(response.text)
-    print(response.headers)
+    string = response.text
+    res_dict = json.loads(string)
+    print(type(res_dict))
+    #print(response.headers)
 
-def func(): 
-    '''Get str in russian and codinng in str in url'''
+
+def date_today():
+    '''Func that returned today date'''
+    today = date.today()
+    return str(today)
+
+
+def make_full_report(data): 
+    '''Get data (? list) and return report (? list)'''
+    
+    
+def make_main_report(data):
+    '''get data (? list) and return (? list)'''
+    pass
+
+def read_file(file_name):
+    pass
+
+def write_file(file_name):
+    pass
+
+
+def base_file_write(base_file, data):
+    with open(file=base_file, mode="a", encoding="UTF-8", newline='') as base:
+        writer = csv.writer(base, delimiter=';')
+        writer.writerow(data)
+        print(green_text + "Внесена запись" + end_text)
+        print(data)
+
+
+def write_change_base_file(base_file, base_list):
+    '''Func recieved name base file and new base list. 
+    Then write base file from list.'''
+    with open(file=base_file, mode="w", encoding="UTF-8", newline='') as base:
+        writer = csv.writer(base, delimiter=';')
+        for line in base_list:
+            writer.writerow(line)
+    print(red_text + "Файл базы данных ЗАПИСАН" + end_text + "\n")
+
+
+'''
+Structure of response
+{"pageData":
+    [
+        {"snils":"10749272160",
+        "category":"Физическое лицо",
+        "region":"Республика Хакасия",
+        "arbitrManagerFio":"КРУГЛОВ ГЕОРГИЙ КОНСТАНТИНОВИЧ",
+        "address":"Республика Хакасия, Боградский район, с. Первомайское, ул. Кирова, д. 5, кв. 3",
+        "lastLegalCase":{"number":"А74-8815/2023",
+        "status":{"code":"CitizenAssetsDisposal",
+        "description":"Реализация имущества гражданина"}
+        },
+        "guid":"0677d445-f2e1-47a8-9230-302973cf3368",
+        "fio":"Пистунович Сергей Анатольевич",
+        "inn":"190111676789"}
+    ],
+    "total":1
+}
+'''
+
+'''
+func for read data file(? csv)
+func for clean data 
+func for create data list for check
+func for check person
+func for make full report
+func for make main report
+
+'''
     
 
     
