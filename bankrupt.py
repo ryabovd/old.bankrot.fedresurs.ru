@@ -7,6 +7,7 @@ import json
 from urllib.parse import quote
 import pandas as pd
 import time
+import random
 
 
 kernel32 = ctypes.windll.kernel32
@@ -24,6 +25,7 @@ white_text_on_blue = '\033[37m\033[44m'
 marked_text = '\033[43m'
 end_text = '\033[0m'
 numbers = white_text_on_blue
+
 
 
 def build_url(prsnbankruptsId, regionId='95'):
@@ -67,13 +69,26 @@ def check_debtors(debtors):
         id = debtor.strip().lower()
 #        print('id', id)
         check_person(id)
-        time.sleep(6)
+        asleep = random.randint(3000, 14999) / 1000
+        print('sleep', asleep)
+        time.sleep(asleep)
         pass
 
 
 def check_person(id):
     get_response(id)
     pass
+
+
+data = {'name': [],
+#        'debt': [],
+        'link_fedresurs': [],
+#        'link_kad': [],
+        'case': [],
+        'procedure': [],
+        'inn': [],
+        'snils': [],
+        'address': []}
 
 
 def get_response(id):
@@ -101,8 +116,15 @@ def get_response(id):
         for dict in res_dict['pageData']:
             if id == dict['fio'].lower():
                 print('fio', dict['fio'])
+                data['name'].append(dict['fio'])
                 print('snils', dict['snils'])
+                data['snils'].append(dict['snils'])
                 print('inn', dict['inn'])
+                data['inn'].append(dict['inn'])
+                data['case'].append(dict['lastLegalCase']['number'])
+                data['procedure'].append(dict['lastLegalCase']['status']['description'])
+                data['address'].append(dict['address'])
+                data['link_fedresurs'].append('https://fedresurs.ru/persons/' + dict['guid'])
     else:
         pass
 
@@ -110,6 +132,9 @@ def get_response(id):
 def main():
     debtors = get_debtors()
     check_debtors(debtors)
+    print(data)
+    df = pd.DataFrame(data)
+    df.to_excel('bankrots.xlsx', index=False)
 
 
 def date_today():
