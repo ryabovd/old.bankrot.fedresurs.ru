@@ -1,5 +1,6 @@
 import requests
 from datetime import date
+from datetime import datetime
 import csv
 import ctypes
 import pprint
@@ -31,7 +32,8 @@ numbers = white_text_on_blue
 def build_url(prsnbankruptsId, regionId='95'):
     '''Build str url for parse'''
     start_url = "https://bankrot.fedresurs.ru/backend/prsnbankrupts?searchString="
-    middle_url = "&isActiveLegalCase=null&regionId="
+#    middle_url = "&isActiveLegalCase=null&regionId="
+    middle_url = "&isActiveLegalCase=true&regionId="
     end_url = "&limit=15&offset=0"
     encoding_prsnbankruptsId = quote(prsnbankruptsId)
     return start_url + encoding_prsnbankruptsId + middle_url + regionId + end_url
@@ -129,12 +131,25 @@ def get_response(id):
         pass
 
 
+def start_time():
+    start_time = datetime.now()
+    return start_time
+
+def process_time(start_time):
+#    start_time = time.time()
+    end_time = datetime.now()  # время окончания выполнения
+    execution_time = end_time - start_time  # вычисляем время выполнения
+    print(f"Время выполнения программы: {execution_time} секунд")
+
+
 def main():
+    start = start_time()
     debtors = get_debtors()
     check_debtors(debtors)
     print(data)
     df = pd.DataFrame(data)
     df.to_excel('bankrots.xlsx', index=False)
+    process_time(start)
 
 
 def date_today():
@@ -237,20 +252,19 @@ func for make main report
 if __name__ == "__main__":
     main()
 
-'''prsnbankruptsId = get_prsnbankruptsId()
-string = str_resp_7
-    #print(type(string))
-    #print(string)
-res_dict = json.loads(string)
-    #print(type(res_dict))
+"""
+Ссылки на страницу Федресурс должны быть активными.
+Исправить.
 
-    #print(res_dict.keys())
-    #print(res_dict['pageData'])
-    #print(type(res_dict['pageData']))
-    #print(len(res_dict['pageData']))
-    #print(type(res_dict['pageData'][0]))
-for dict in res_dict['pageData']:
-    if prsnbankruptsId in dict.values():
-        print('fio', dict['fio'])
-        print('snils', dict['snils'])
-        print('inn', dict['inn'])'''
+Сделать копирование данных в новую книгу эксел, 
+в которой первый лист - это копия данных файла пользователя, 
+а второй лист - это результат проверки данных из файла пользователя на сайте.
+
+Записать книгу эксел в файл с названием включающим год-месяц-дату проверки.
+
+Удалить файл данных пользователя.
+
+Перед проверкой спрашивать пользователя какой файл проверять.
+
+После запуска находить файл с минимальной датой редактирования.
+"""
