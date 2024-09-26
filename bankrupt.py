@@ -32,8 +32,10 @@ numbers = white_text_on_blue
 def build_url(prsnbankruptsId, regionId='95'):
     '''Build str url for parse'''
     start_url = "https://bankrot.fedresurs.ru/backend/prsnbankrupts?searchString="
-#    middle_url = "&isActiveLegalCase=null&regionId="
-    middle_url = "&isActiveLegalCase=true&regionId="
+    middle_url = "&isActiveLegalCase=null&regionId=" # Это для всех дел независимо от статуса
+#    middle_url = "&isActiveLegalCase=true&regionId=" # Это для активных дел
+#    middle_url = "&isActiveLegalCase=false&regionId=" # Это для завершенных дел
+
     end_url = "&limit=15&offset=0"
     encoding_prsnbankruptsId = quote(prsnbankruptsId)
     return start_url + encoding_prsnbankruptsId + middle_url + regionId + end_url
@@ -70,8 +72,9 @@ def check_debtors(debtors):
     for debtor in debtors:
         id = debtor.strip().lower()
 #        print('id', id)
+        print(f'Проверка {debtors.index(debtor) + 1} из {len(debtors)} - {(debtors.index(debtor) + 1) * 100 // len(debtors)}% завершено')
         check_person(id)
-        asleep = random.randint(3000, 14999) / 1000
+        asleep = random.randint(2000, 5000) / 1000
         print('sleep', asleep)
         time.sleep(asleep)
         pass
@@ -113,14 +116,18 @@ def get_response(id):
     response.encoding = 'utf-8'
     string = response.text
     res_dict = json.loads(string)
-    #print('res_dict', res_dict)
+#    print('res_dict', res_dict) # Печатаем полученный словарь
     if res_dict['total'] > 0:
         for dict in res_dict['pageData']:
             if id == dict['fio'].lower():
                 print('fio', dict['fio'])
                 data['name'].append(dict['fio'])
-                print('snils', dict['snils'])
-                data['snils'].append(dict['snils'])
+                if 'snils' in dict:
+                    print('snils', dict['snils'])
+                    data['snils'].append(dict['snils'])
+                else:
+                    print('snils', '0')
+                    data['snils'].append('0')
                 print('inn', dict['inn'])
                 data['inn'].append(dict['inn'])
                 data['case'].append(dict['lastLegalCase']['number'])
@@ -255,6 +262,9 @@ if __name__ == "__main__":
 """
 Ссылки на страницу Федресурс должны быть активными.
 Исправить.
+Возможно, нужно добавить знак конца строки или перевода на другую строку
+
+Увеличить ширину столбцов выходного файла эксел.
 
 Сделать копирование данных в новую книгу эксел, 
 в которой первый лист - это копия данных файла пользователя, 
