@@ -59,12 +59,12 @@ def get_column(table):
 
 
 def get_debtors():
-    print()
+#    print()
     table = read_xls()
     debtors = list(get_column(table))
     debtors = debtors[:-1]
-    print()
-    print(debtors)
+#    print()
+#    print(debtors)
     return debtors
 
 
@@ -75,7 +75,7 @@ def check_debtors(debtors):
         print(f'Проверка {debtors.index(debtor) + 1} из {len(debtors)} - {(debtors.index(debtor) + 1) * 100 // len(debtors)}% завершено')
         check_person(id)
         asleep = random.randint(2000, 5000) / 1000
-        print('sleep', asleep)
+#        print('sleep', asleep)
         time.sleep(asleep)
         pass
 
@@ -87,10 +87,10 @@ def check_person(id):
 
 data = {'name': [],
 #        'debt': [],
+        'procedure': [],
+        'case': [],
         'link_fedresurs': [],
 #        'link_kad': [],
-        'case': [],
-        'procedure': [],
         'inn': [],
         'snils': [],
         'address': []}
@@ -133,7 +133,7 @@ def get_response(id):
                 data['case'].append(dict['lastLegalCase']['number'])
                 data['procedure'].append(dict['lastLegalCase']['status']['description'])
                 data['address'].append(dict['address'])
-                data['link_fedresurs'].append('https://fedresurs.ru/persons/' + dict['guid'])
+                data['link_fedresurs'].append('https://fedresurs.ru/persons/' + dict['guid'] + ' ')
     else:
         pass
 
@@ -142,27 +142,35 @@ def start_time():
     start_time = datetime.now()
     return start_time
 
+
 def process_time(start_time):
 #    start_time = time.time()
     end_time = datetime.now()  # время окончания выполнения
     execution_time = end_time - start_time  # вычисляем время выполнения
-    print(f"Время выполнения программы: {execution_time} секунд")
+    print(green_text + "Время выполнения программы: " + str(execution_time) + " секунд" + end_text + "\n")
+
+
+def date_today():
+    '''Func that returned today date'''
+    today = date.today()
+    return today
 
 
 def main():
     start = start_time()
     debtors = get_debtors()
     check_debtors(debtors)
-    print(data)
+#    print(data)
+    today_date = str(date_today())
+    filename = 'bankrots_' + today_date + '.xlsx'
     df = pd.DataFrame(data)
-    df.to_excel('bankrots.xlsx', index=False)
+    df.to_excel(filename, index=False)
+    print(red_text + "Файл данных ЗАПИСАН" + end_text + "\n")
     process_time(start)
 
 
-def date_today():
-    '''Func that returned today date'''
-    today = date.today()
-    return str(today)
+if __name__ == "__main__":
+    main()
 
 
 def make_full_report(data): 
@@ -179,23 +187,6 @@ def read_file(file_name):
 def write_file(file_name):
     pass
 
-
-def base_file_write(base_file, data):
-    with open(file=base_file, mode="a", encoding="UTF-8", newline='') as base:
-        writer = csv.writer(base, delimiter=';')
-        writer.writerow(data)
-        print(green_text + "Внесена запись" + end_text)
-        print(data)
-
-
-def write_change_base_file(base_file, base_list):
-    '''Func recieved name base file and new base list. 
-    Then write base file from list.'''
-    with open(file=base_file, mode="w", encoding="UTF-8", newline='') as base:
-        writer = csv.writer(base, delimiter=';')
-        for line in base_list:
-            writer.writerow(line)
-    print(red_text + "Файл базы данных ЗАПИСАН" + end_text + "\n")
 
 str_res_pist = '{"pageData":[{"snils":"10749272160","category":"Физическое лицо","region":"Республика Хакасия","arbitrManagerFio":"КРУГЛОВ ГЕОРГИЙ КОНСТАНТИНОВИЧ","address":"Республика Хакасия, Боградский район, с. Первомайское, ул. Кирова, д. 5, кв. 3","lastLegalCase":{"number":"А74-8815/2023","status":{"code":"CitizenAssetsDisposal","description":"Реализация имущества гражданина"}},"guid":"0677d445-f2e1-47a8-9230-302973cf3368","fio":"Пистунович Сергей Анатольевич","inn":"190111676789"}],"total":1}'
 str_resp = '{"pageData":[{"snils":"10749272160","category":"Физическое лицо","region":"Республика Хакасия","arbitrManagerFio":"КРУГЛОВ ГЕОРГИЙ КОНСТАНТИНОВИЧ","address":"Республика Хакасия, Боградский район, с. Первомайское, ул. Кирова, д. 5, кв. 3","lastLegalCase":{"number":"А74-8815/2023","status":{"code":"CitizenAssetsDisposal","description":"Реализация имущества гражданина"}},"guid":"0677d445-f2e1-47a8-9230-302973cf3368","fio":"Пистунович Сергей Анатольевич","inn":"190111676789"}],"total":1}'
@@ -254,10 +245,6 @@ func for make main report
 '''
     
 
-    
-
-if __name__ == "__main__":
-    main()
 
 """
 Ссылки на страницу Федресурс должны быть активными.
@@ -265,6 +252,8 @@ if __name__ == "__main__":
 Возможно, нужно добавить знак конца строки или перевода на другую строку
 
 Увеличить ширину столбцов выходного файла эксел.
+
+Собирать дату рождения и место рождения.
 
 Сделать копирование данных в новую книгу эксел, 
 в которой первый лист - это копия данных файла пользователя, 
