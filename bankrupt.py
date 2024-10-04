@@ -72,9 +72,9 @@ def check_debtors(debtors):
     for debtor in debtors:
         id = debtor.strip().lower()
 #        print('id', id)
-        print(f'Проверка {debtors.index(debtor) + 1} из {len(debtors)} - {(debtors.index(debtor) + 1) * 100 // len(debtors)}% завершено')
+        print(f'Проверка {debtors.index(debtor) + 1} из {len(debtors)} - {debtor.strip()} - {(debtors.index(debtor) + 1) * 100 // len(debtors)} % завершено')
         check_person(id)
-        asleep = random.randint(2000, 5000) / 1000
+        asleep = random.randint(2000, 6000) / 1000
 #        print('sleep', asleep)
         time.sleep(asleep)
         pass
@@ -118,6 +118,7 @@ def get_response(id):
     res_dict = json.loads(string)
 #    print('res_dict', res_dict) # Печатаем полученный словарь
     if res_dict['total'] > 0:
+        print(red_text + str(id) + end_text)
         for dict in res_dict['pageData']:
             if id == dict['fio'].lower():
                 print('fio', dict['fio'])
@@ -163,6 +164,10 @@ def main():
 #    print(data)
     today_date = str(date_today())
     filename = 'bankrots_' + today_date + '.xlsx'
+    if len(data['name']) > 0:
+        print(red_text + 'Найдено ' + str(len(data['name'])) + ' записей' + end_text + "\n")
+    else:
+        print(green_text + 'Найдено ' + str(len(data['name'])) + ' записей' + end_text + "\n")
     df = pd.DataFrame(data)
     df.to_excel(filename, index=False)
     print(red_text + "Файл данных ЗАПИСАН" + end_text + "\n")
@@ -249,7 +254,7 @@ func for make main report
 """
 Ссылки на страницу Федресурс должны быть активными.
 Исправить.
-Возможно, нужно добавить знак конца строки или перевода на другую строку
+Возможно, нужно добавить знак конца строки или перевода на другую строку - не работает, ищи другие варианты.
 
 Увеличить ширину столбцов выходного файла эксел.
 
@@ -259,7 +264,7 @@ func for make main report
 в которой первый лист - это копия данных файла пользователя, 
 а второй лист - это результат проверки данных из файла пользователя на сайте.
 
-Записать книгу эксел в файл с названием включающим год-месяц-дату проверки.
++Записать книгу эксел в файл с названием включающим год-месяц-дату проверки.
 
 Удалить файл данных пользователя.
 
