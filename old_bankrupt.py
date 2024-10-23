@@ -9,6 +9,7 @@ from urllib.parse import quote
 import pandas as pd
 import time
 import random
+from bs4 import BeautifulSoup
 
 
 kernel32 = ctypes.windll.kernel32
@@ -70,19 +71,12 @@ def get_debtors():
 
 def check_debtors(debtors):
     for debtor in debtors:
-        id = debtor.strip().lower()
-#        print('id', id)
+        prslastname, prsfirstname, prsmiddlename = debtor.lower().split()
+#        id = debtor.strip().lower()
         print(f'Проверка {debtors.index(debtor) + 1} из {len(debtors)} - {(debtors.index(debtor) + 1) * 100 // len(debtors)}% завершено')
-        check_person(id)
+        get_response(prslastname, prsfirstname, prsmiddlename)
         asleep = random.randint(2000, 5000) / 1000
-#        print('sleep', asleep)
         time.sleep(asleep)
-        pass
-
-
-def check_person(id):
-    get_response(id)
-    pass
 
 
 data = {'name': [],
@@ -96,53 +90,47 @@ data = {'name': [],
         'address': []}
 
 
-def get_response(id):
-    #url = 'https://old.bankrot.fedresurs.ru/DebtorsSearch.aspx'
-    url = 'https://old.bankrot.fedresurs.ru/DebtorsSearch.aspx'
+def get_response(prslastname='', prsfirstname='', prsmiddlename='', regionid = '95'):
+    prslastname, prsfirstname, prsmiddlename = quote(prslastname), quote(prsfirstname), quote(prsmiddlename)
+    regionid = '95'
+    session = get_session()
+    url = 'https://old.bankrot.fedresurs.ru/DebtorsSearch.aspx/'
     headers = {
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-        "accept-encoding": "gzip, deflate, br, zstd",
-        "Accept-Language": "ru-RU,ru;q=0.9,en-RU;q=0.8,en;q=0.7,en-US;q=0.6",
-        "cache-control": "max-age=0",
-        "Connection": "keep-alive",
-        "content-length": "15395",
-        "content-type": "application/x-www-form-urlencoded",
-        "Cookie": "bankrotcookie=6da7022bc3261c3be0d6b7e379396e18; ASP.NET_SessionId=w40ohvvehrbeaigux0rn5lxo; _ym_uid=1727798102350149238; _ym_d=1727798102; _ym_isad=2; _ym_visorc=w; qrator_msid=1727797939.702.6Q5srhCit6Uqr8Ni-2523jnq19lmgfhsnlh8pm9grivmicptn; debtorsearch=typeofsearch=Persons&orgname=&orgaddress=&orgregionid=&orgogrn=&orginn=&orgokpo=&OrgCategory=&prslastname=%d0%a0%d0%be%d1%81%d0%bb%d1%8f%d0%ba%d0%be%d0%b2&prsfirstname=&prsmiddlename=&prsaddress=&prsregionid=95&prsinn=&prsogrn=&prssnils=&PrsCategory=&pagenumber=0",
-        "set-cookie": "debtorsearch=typeofsearch=Persons&orgname=&orgaddress=&orgregionid=&orgogrn=&orginn=&orgokpo=&OrgCategory=&prslastname=&prsfirstname=&prsmiddlename=&prsaddress=&prsregionid=&prsinn=&prsogrn=&prssnils=&PrsCategory=&pagenumber=0; path=/",
-        "Referer": "https://bankrot.fedresurs.ru/bankrupts?searchString=^%^D0^%^BF^%^D0^%^B8^%^D1^%^81^%^D1^%^82^%^D1^%^83^%^D0^%^BD^%^D0^%^BE^%^D0^%^B2^%^D0^%^B8^%^D1^%^87^%^20^%^D1^%^81^%^D0^%^B5^%^D1^%^80^%^D0^%^B3^%^D0^%^B5^%^D0^%^B9&regionId=95&isActiveLegalCase=true&offset=0&limit=15^",
-        "Sec-Fetch-Dest": "empty",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-origin",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
-        "sec-ch-ua": 'Not)A;Brand";v="99", "Google Chrome";v="127", "Chromium";v="127',
-        "sec-ch-ua-mobile": "?0",
-        "sec-ch-ua-platform": "Windows"
-        }
-    response = requests.get(url, headers=headers)
-"""    response.encoding = 'utf-8'
-    string = response.text
-    res_dict = json.loads(string)"""
-#    print('res_dict', res_dict) # Печатаем полученный словарь
-"""    if res_dict['total'] > 0:
-        for dict in res_dict['pageData']:
-            if id == dict['fio'].lower():
-                print('fio', dict['fio'])
-                data['name'].append(dict['fio'])
-                if 'snils' in dict:
-                    print('snils', dict['snils'])
-                    data['snils'].append(dict['snils'])
-                else:
-                    print('snils', '0')
-                    data['snils'].append('0')
-                print('inn', dict['inn'])
-                data['inn'].append(dict['inn'])
-                data['case'].append(dict['lastLegalCase']['number'])
-                data['procedure'].append(dict['lastLegalCase']['status']['description'])
-                data['address'].append(dict['address'])
-                data['link_fedresurs'].append('https://fedresurs.ru/persons/' + dict['guid'] + ' ')
-    else:
-        pass
-"""
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'accept-encoding': 'gzip, deflate, br, zstd',
+        'accept-language': 'ru-RU,ru;q=0.9,en-RU;q=0.8,en;q=0.7,en-US;q=0.6',
+        'cache-control': 'no-cache',
+        'connection': 'keep-alive',
+        'cookie': '_ym_uid=1700107103592041594; _ym_d=1728816354; ASP.NET_SessionId=sljw4ny104xlpbsk54vb3wqh; _ym_isad=2; bankrotcookie=fac94585d97b923e5b4447836196b410; _ym_visorc=w; debtorsearch=typeofsearch=Persons&orgname=&orgaddress=&orgregionid=&orgogrn=&orginn=&orgokpo=&OrgCategory=' + '&prslastname=' + prslastname + '&prsfirstname=' + prsfirstname + '&prsmiddlename=' + prsmiddlename + '&prsaddress=&prsregionid=' + regionid + '&prsinn=&prsogrn=&prssnils=&PrsCategory=&pagenumber=0; qrator_msid=1728820063.842.5fEIfvU8SkJAvMc1-lscmto11bij4aoseoijabb61qkui5pr5',
+        'host': 'old.bankrot.fedresurs.ru',
+        'pragma': 'no-cache',
+        'sec-ch-ua': '"Google Chrome";v="129", "Not=A?Brand";v="8", "Chromium";v="129"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-fetch-dest': 'document',
+        'sec-fetch-mode': 'navigate',
+        'sec-fetch-site': 'none',
+        'sec-fetch-user': '?1',
+        'upgrade-insecure-requests': '1',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36'
+    }
+    data = session.get(url, headers=headers)
+    text = data.text
+
+    soup = BeautifulSoup(text, 'html.parser')
+    #print(soup.prettify())
+    #print(tbody in soup.prettify())
+    
+#    print('buttons' in soup)
+    #print('Чаптыков' in soup.prettify())
+#    print('Чаптыков' in text)
+    bank = soup.find('table', class_ = 'bank').find('tr').find_next_siblings('tr')
+    for el in bank:
+        #print(str(el.get_text()).replace('', '').replace('\t', '').replace('\n', ''))
+        a = str(el.get_text()).replace('\t', '').replace('Физическое лицо', '').split('\r\n')
+        #print(a.split('\n'), type(a))
+        print(a)
+
 
 def start_time():
     start_time = datetime.now()
@@ -162,19 +150,53 @@ def date_today():
     return today
 
 
-def main():
-    name = 'Барабаш'
+def get_name():
     prslastname = ''
     prsfirstname = ''
     prsmiddlename = ''
-    
+    return prslastname, prsfirstname, prsmiddlename
 
-    prslastname, prsfirstname, prsmiddlename = quote(input('Фамилия? ').strip()), quote(input('Имя? ').strip()), quote(input('Отчество? ').strip())
-    print('prslastname', prslastname)
-    print('prsfirstname', prsfirstname)
-    print('prsmiddlename', prsmiddlename)
 
+def get_session():
     s = requests.Session()
+    return s
+
+
+def get_debtors():
+    table = read_xls()
+    debtors = list(get_column(table))
+    debtors = debtors[:-1]
+    return debtors
+
+
+def start_time():
+    start_time = datetime.now()
+    return start_time
+
+
+data = {'name': [],
+#        'debt': [],
+        'procedure': [],
+        'case': [],
+        'link_fedresurs': [],
+#        'link_kad': [],
+        'inn': [],
+        'snils': [],
+        'address': []}
+
+
+def main():
+    start = start_time()
+    debtors = get_debtors()
+    today_date = str(date_today())
+    filename = 'bankrots_' + today_date + '.xlsx'
+    check_debtors(debtors)
+#    name = get_name()
+#    name = 'Чаптыков', '', ''
+#    prslastname, prsfirstname, prsmiddlename = name
+"""    prslastname, prsfirstname, prsmiddlename = quote(prslastname), quote(prsfirstname), quote(prsmiddlename)
+    regionid = '95'
+    session = get_session()
     url = 'https://old.bankrot.fedresurs.ru/DebtorsSearch.aspx/'
     headers = {
         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -182,7 +204,7 @@ def main():
         'accept-language': 'ru-RU,ru;q=0.9,en-RU;q=0.8,en;q=0.7,en-US;q=0.6',
         'cache-control': 'no-cache',
         'connection': 'keep-alive',
-        'cookie': '_ym_uid=1728029516311134247; _ym_d=1728029516; ASP.NET_SessionId=0bohgc1sylhu0kmbtchgkc11; _ym_isad=2; bankrotcookie=fac94585d97b923e5b4447836196b410; _ym_visorc=w; debtorsearch=typeofsearch=Persons&orgname=&orgaddress=&orgregionid=&orgogrn=&orginn=&orgokpo=&OrgCategory=' + '&prslastname=' + prslastname + '&prsfirstname=' + prsfirstname + '&prsmiddlename=' + prsmiddlename + '&prsaddress=&prsregionid=&prsinn=&prsogrn=&prssnils=&PrsCategory=&pagenumber=0; qrator_msid=1728820063.842.5fEIfvU8SkJAvMc1-lscmto11bij4aoseoijabb61qkui5pr5',
+        'cookie': '_ym_uid=1700107103592041594; _ym_d=1728816354; ASP.NET_SessionId=sljw4ny104xlpbsk54vb3wqh; _ym_isad=2; bankrotcookie=fac94585d97b923e5b4447836196b410; _ym_visorc=w; debtorsearch=typeofsearch=Persons&orgname=&orgaddress=&orgregionid=&orgogrn=&orginn=&orgokpo=&OrgCategory=' + '&prslastname=' + prslastname + '&prsfirstname=' + prsfirstname + '&prsmiddlename=' + prsmiddlename + '&prsaddress=&prsregionid=' + regionid + '&prsinn=&prsogrn=&prssnils=&PrsCategory=&pagenumber=0; qrator_msid=1728820063.842.5fEIfvU8SkJAvMc1-lscmto11bij4aoseoijabb61qkui5pr5',
         'host': 'old.bankrot.fedresurs.ru',
         'pragma': 'no-cache',
         'sec-ch-ua': '"Google Chrome";v="129", "Not=A?Brand";v="8", "Chromium";v="129"',
@@ -194,34 +216,32 @@ def main():
         'sec-fetch-user': '?1',
         'upgrade-insecure-requests': '1',
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36'
-
     }
-    cookies = {
-        'ASP.NET_SessionId': 'sljw4ny104xlpbsk54vb3wqh',
-        '_ym_isad': '2',
-        '_ym_visorc': 'b',
-        'bankrotcookie': 'fac94585d97b923e5b4447836196b410',
-        'debtorsearch': '_ym_uid=1700107103592041594; _ym_d=1728816354; _ym_isad=2; _ym_visorc=w; bankrotcookie=371074958e57176c98581f5d2475c9e6; ASP.NET_SessionId=sljw4ny104xlpbsk54vb3wqh; qrator_msid=1728816196.249.8it5rT4nD2I1od7w-4jhegtgqe8dq77684peggm9ebbnqe6s1; debtorsearch=typeofsearch=Persons&orgname=&orgaddress=&orgregionid=&orgogrn=&orginn=&orgokpo=&OrgCategory=&prslastname=%d0%9f%d0%b8%d1%81%d1%82%d1%83%d0%bd%d0%be%d0%b2%d0%b8%d1%87&prsfirstname=&prsmiddlename=&prsaddress=&prsregionid=&prsinn=&prsogrn=&prssnils=&PrsCategory=&pagenumber=0',
-        'qrator_msid': '1728801687.622.z0pB0Qc7dphfomI9-ka9calmjflbcalfmp9bd7i6jtng9gd82',
-        '_ym_d': '1728029516',
-        '_ym_uid': '1728029516311134247'
-    }
-
-
-    data = s.get(url, headers=headers)
-    #data = s.get(url).content
-    print(data.content)
-    print()
-    print(data.text)
-    count = data.text.count(name)
-    print(count)
-    x = 1
+    data = session.get(url, headers=headers)
     text = data.text
-    while x != count:
-        start = text.find(name)
-        text = text[start + 1 :]
-        x += 1
-    print(text[: 500])    
+    #print(text)"""
+
+
+
+"""    fiz = soup.find(string='Физическое лицо')[2].find_parent('tr')
+    print(fiz)"""
+
+    #print(bank.find_al('tr'))
+    #print(rows)
+
+    #data = s.get(url).content
+    #print(data.content)
+    #print()
+    #print(data.text)
+    #count = data.text.count(name)
+    #print(count)
+    #x = 1
+    #text = data.text
+    #while x != count:
+    #    start = text.find(name)
+    #   text = text[start + 1 :]
+    #    x += 1
+    #print(text[: 500])    
 
     #print(data.text)
 
