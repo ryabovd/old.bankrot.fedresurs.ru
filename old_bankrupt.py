@@ -179,38 +179,7 @@ def main():
     today_date = str(date_today())
     filename = 'bankrots_' + today_date + '.xlsx'
     check_debtors(debtors)
-"""    prslastname, prsfirstname, prsmiddlename = quote(prslastname), quote(prsfirstname), quote(prsmiddlename)
-    regionid = '95'
-    session = get_session()
-    url = 'https://old.bankrot.fedresurs.ru/DebtorsSearch.aspx/'
-    headers = {
-        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-        'accept-encoding': 'gzip, deflate, br, zstd',
-        'accept-language': 'ru-RU,ru;q=0.9,en-RU;q=0.8,en;q=0.7,en-US;q=0.6',
-        'cache-control': 'no-cache',
-        'connection': 'keep-alive',
-        'cookie': '_ym_uid=1700107103592041594; _ym_d=1728816354; ASP.NET_SessionId=sljw4ny104xlpbsk54vb3wqh; _ym_isad=2; bankrotcookie=fac94585d97b923e5b4447836196b410; _ym_visorc=w; debtorsearch=typeofsearch=Persons&orgname=&orgaddress=&orgregionid=&orgogrn=&orginn=&orgokpo=&OrgCategory=' + '&prslastname=' + prslastname + '&prsfirstname=' + prsfirstname + '&prsmiddlename=' + prsmiddlename + '&prsaddress=&prsregionid=' + regionid + '&prsinn=&prsogrn=&prssnils=&PrsCategory=&pagenumber=0; qrator_msid=1728820063.842.5fEIfvU8SkJAvMc1-lscmto11bij4aoseoijabb61qkui5pr5',
-        'host': 'old.bankrot.fedresurs.ru',
-        'pragma': 'no-cache',
-        'sec-ch-ua': '"Google Chrome";v="129", "Not=A?Brand";v="8", "Chromium";v="129"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
-        'sec-fetch-dest': 'document',
-        'sec-fetch-mode': 'navigate',
-        'sec-fetch-site': 'none',
-        'sec-fetch-user': '?1',
-        'upgrade-insecure-requests': '1',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36'
-    }
-    data = session.get(url, headers=headers)
-    text = data.text
-    #print(text)"""
-
-
-
-"""    fiz = soup.find(string='Физическое лицо')[2].find_parent('tr')
-    print(fiz)"""
-     
+    
     
 
 if __name__ == "__main__":
