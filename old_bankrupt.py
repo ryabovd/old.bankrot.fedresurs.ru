@@ -60,19 +60,15 @@ def get_column(table):
 
 
 def get_debtors():
-#    print()
     table = read_xls()
     debtors = list(get_column(table))
     debtors = debtors[:-1]
-#    print()
-#    print(debtors)
     return debtors
 
 
 def check_debtors(debtors):
     for debtor in debtors:
         prslastname, prsfirstname, prsmiddlename = debtor.lower().split()
-#        id = debtor.strip().lower()
         print(f'Проверка {debtors.index(debtor) + 1} из {len(debtors)} - {(debtors.index(debtor) + 1) * 100 // len(debtors)}% завершено')
         get_response(prslastname, prsfirstname, prsmiddlename)
         asleep = random.randint(2000, 5000) / 1000
@@ -116,14 +112,7 @@ def get_response(prslastname='', prsfirstname='', prsmiddlename='', regionid = '
     }
     data = session.get(url, headers=headers)
     text = data.text
-
     soup = BeautifulSoup(text, 'html.parser')
-    #print(soup.prettify())
-    #print(tbody in soup.prettify())
-    
-#    print('buttons' in soup)
-    #print('Чаптыков' in soup.prettify())
-#    print('Чаптыков' in text)
     bank = soup.find('table', class_ = 'bank').find('tr').find_next_siblings('tr')
     for el in bank:
         #print(str(el.get_text()).replace('', '').replace('\t', '').replace('\n', ''))
@@ -138,7 +127,6 @@ def start_time():
 
 
 def process_time(start_time):
-#    start_time = time.time()
     end_time = datetime.now()  # время окончания выполнения
     execution_time = end_time - start_time  # вычисляем время выполнения
     print(green_text + "Время выполнения программы: " + str(execution_time) + " секунд" + end_text + "\n")
@@ -191,9 +179,6 @@ def main():
     today_date = str(date_today())
     filename = 'bankrots_' + today_date + '.xlsx'
     check_debtors(debtors)
-#    name = get_name()
-#    name = 'Чаптыков', '', ''
-#    prslastname, prsfirstname, prsmiddlename = name
 """    prslastname, prsfirstname, prsmiddlename = quote(prslastname), quote(prsfirstname), quote(prsmiddlename)
     regionid = '95'
     session = get_session()
@@ -225,26 +210,6 @@ def main():
 
 """    fiz = soup.find(string='Физическое лицо')[2].find_parent('tr')
     print(fiz)"""
-
-    #print(bank.find_al('tr'))
-    #print(rows)
-
-    #data = s.get(url).content
-    #print(data.content)
-    #print()
-    #print(data.text)
-    #count = data.text.count(name)
-    #print(count)
-    #x = 1
-    #text = data.text
-    #while x != count:
-    #    start = text.find(name)
-    #   text = text[start + 1 :]
-    #    x += 1
-    #print(text[: 500])    
-
-    #print(data.text)
-
      
     
 
