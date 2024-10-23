@@ -29,25 +29,6 @@ end_text = '\033[0m'
 numbers = white_text_on_blue
 
 
-
-def build_url(prsnbankruptsId, regionId='95'):
-    '''Build str url for parse'''
-    start_url = "https://bankrot.fedresurs.ru/backend/prsnbankrupts?searchString="
-    middle_url = "&isActiveLegalCase=null&regionId=" # Это для всех дел независимо от статуса
-#    middle_url = "&isActiveLegalCase=true&regionId=" # Это для активных дел
-#    middle_url = "&isActiveLegalCase=false&regionId=" # Это для завершенных дел
-
-    end_url = "&limit=15&offset=0"
-    encoding_prsnbankruptsId = quote(prsnbankruptsId)
-    return start_url + encoding_prsnbankruptsId + middle_url + regionId + end_url
-
-
-def get_prsnbankruptsId():
-    '''Get Id return Id (str)'''
-    prsnbankruptsId = input('Введите ФИО или ИНН или СНИЛС ').lower().strip()
-    return prsnbankruptsId
-
-
 def read_xls(filename='debtors.xls'):
     '''Не читаем первую строку, т.к. в ней нет данных'''
     table = pd.read_excel(filename, skiprows=1)
@@ -115,9 +96,7 @@ def get_response(prslastname='', prsfirstname='', prsmiddlename='', regionid = '
     soup = BeautifulSoup(text, 'html.parser')
     bank = soup.find('table', class_ = 'bank').find('tr').find_next_siblings('tr')
     for el in bank:
-        #print(str(el.get_text()).replace('', '').replace('\t', '').replace('\n', ''))
         a = str(el.get_text()).replace('\t', '').replace('Физическое лицо', '').split('\r\n')
-        #print(a.split('\n'), type(a))
         print(a)
 
 
