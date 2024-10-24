@@ -61,6 +61,7 @@ data = {'name': [],
         'procedure': [],
         'case': [],
         'link_fedresurs': [],
+#        'old_link_fedresurs': [],
 #        'link_kad': [],
         'inn': [],
         'snils': [],
@@ -100,10 +101,10 @@ def get_response(prslastname='', prsfirstname='', prsmiddlename='', regionid = '
         #print(prsn_data)
         #print(type(prsn_data))
         prsn_data_list = clean_prsn_data(prsn_data_list_dirty)
-        person_link_end = get_person_link(soup)
+        person_old_link_end = get_person_link(soup)
         #print(prsn_data_list)
         #print(person_link_end)
-        person_link = build_person_link(person_link_end)
+        person_link = build_person_old_link(person_old_link_end)
         #print(person_link)
         prsn_name, prsn_inn, prsn_snils, prsn_region, prsn_adress = parse_person_data(prsn_data_list)
         print(prsn_name, prsn_inn, prsn_snils, prsn_region, prsn_adress, person_link, sep='\n')
@@ -115,10 +116,10 @@ def get_person_link(soup):
     return(person_link)
 
 
-def build_person_link(person_link_end):
-    person_link_start = 'https://old.bankrot.fedresurs.ru'
-    person_link = person_link_start + person_link_end
-    return person_link
+def build_person_old_link(person_old_link_end):
+    person_old_link_start = 'https://old.bankrot.fedresurs.ru'
+    person_old_link = person_old_link_start + person_old_link_end
+    return person_old_link
 
 
 def clean_prsn_data(prsn_data_list):
