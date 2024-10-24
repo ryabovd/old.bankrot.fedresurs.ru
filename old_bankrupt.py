@@ -96,16 +96,39 @@ def get_response(prslastname='', prsfirstname='', prsmiddlename='', regionid = '
     soup = BeautifulSoup(text, 'html.parser')
     bank = soup.find('table', class_ = 'bank').find('tr').find_next_siblings('tr')
     for el in bank:
-        prsn_data = str(el.get_text()).replace('\t', '').replace('Физическое лицо', '').split('\r\n')
-        print(prsn_data)
-        print(type(prsn_data))
-        new_list = clean_list(prsn_data)
-        print(new_list)
+        prsn_data_list_dirty = str(el.get_text()).replace('\t', '').replace('Физическое лицо', '').split('\r\n')
+        #print(prsn_data)
+        #print(type(prsn_data))
+        prsn_data_list = clean_prsn_data(prsn_data_list_dirty)
+        person_link_end = get_person_link(soup)
+        #print(prsn_data_list)
+        #print(person_link_end)
+        person_link = build_person_link(person_link_end)
+        #print(person_link)
+        prsn_name, prsn_inn, prsn_snils, prsn_region, prsn_adress = parse_person_data(prsn_data_list)
+        print(prsn_name, prsn_inn, prsn_snils, prsn_region, prsn_adress, person_link, sep='\n')
 
 
-def clean_list(prsn):
-    new_list = [i.strip() for i in prsn if i.strip()]
-    return new_list
+def get_person_link(soup):
+    link = soup.find('table', class_ = 'bank').find('a')
+    person_link = link.get(('href'))
+    return(person_link)
+
+
+def build_person_link(person_link_end):
+    person_link_start = 'https://old.bankrot.fedresurs.ru'
+    person_link = person_link_start + person_link_end
+    return person_link
+
+
+def clean_prsn_data(prsn_data_list):
+    clean_prsn_data_list = [i.strip() for i in prsn_data_list if i.strip()]
+    return clean_prsn_data_list
+
+
+def parse_person_data(prsn_data_list):
+    prsn_name, prsn_inn, prsn_snils, prsn_region, prsn_adress = prsn_data_list
+    return prsn_name, prsn_inn, prsn_snils, prsn_region, prsn_adress
 
 
 def start_time():
@@ -164,8 +187,9 @@ def main():
     start = start_time()
     debtors = get_debtors()
     today_date = str(date_today())
-    filename = 'bankrots_' + today_date + '.xlsx'
     check_debtors(debtors)
+    process_time(start)
+    filename = 'bankrots_' + today_date + '.xlsx'
     
     
 
