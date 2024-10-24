@@ -96,8 +96,16 @@ def get_response(prslastname='', prsfirstname='', prsmiddlename='', regionid = '
     soup = BeautifulSoup(text, 'html.parser')
     bank = soup.find('table', class_ = 'bank').find('tr').find_next_siblings('tr')
     for el in bank:
-        a = str(el.get_text()).replace('\t', '').replace('Физическое лицо', '').split('\r\n')
-        print(a)
+        prsn_data = str(el.get_text()).replace('\t', '').replace('Физическое лицо', '').split('\r\n')
+        print(prsn_data)
+        print(type(prsn_data))
+        new_list = clean_list(prsn_data)
+        print(new_list)
+
+
+def clean_list(prsn):
+    new_list = [i.strip() for i in prsn if i.strip()]
+    return new_list
 
 
 def start_time():
