@@ -101,16 +101,60 @@ def get_response(prslastname='', prsfirstname='', prsmiddlename='', regionid = '
         #print(prsn_data)
         #print(type(prsn_data))
         prsn_data_list = clean_prsn_data(prsn_data_list_dirty)
-        person_old_link_end = get_person_link(soup)
+        person_old_link_end = get_person_old_link(soup)
         #print(prsn_data_list)
         #print(person_link_end)
-        person_link = build_person_old_link(person_old_link_end)
+        person_old_link = build_person_old_link(person_old_link_end)
         #print(person_link)
         prsn_name, prsn_inn, prsn_snils, prsn_region, prsn_adress = parse_person_data(prsn_data_list)
-        print(prsn_name, prsn_inn, prsn_snils, prsn_region, prsn_adress, person_link, sep='\n')
+        print(prsn_name, prsn_inn, prsn_snils, prsn_region, prsn_adress, person_old_link, sep='\n')
+        get_debtor_old_card(session, person_old_link)
 
 
-def get_person_link(soup):
+def get_debtor_old_card(session, link):
+    headers = {
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'accept-encoding': 'gzip, deflate, br, zstd',
+        'accept-language': 'ru-RU,ru;q=0.9,en-RU;q=0.8,en;q=0.7,en-US;q=0.6',
+        'cache-control': 'max-age=0',
+        'connection': 'keep-alive',
+        'cookie': '_ym_uid=1728029516311134247; _ym_d=1728029516; ASP.NET_SessionId=0bohgc1sylhu0kmbtchgkc11; debtorsearch=typeofsearch=Persons&orgname=&orgaddress=&orgregionid=&orgogrn=&orginn=1922547928&orgokpo=&OrgCategory=&prslastname=&prsfirstname=&prsmiddlename=&prsaddress=&prsregionid=&prsinn=&prsogrn=&prssnils=19225479288&PrsCategory=&pagenumber=0; _ym_isad=2; bankrotcookie=c98aae444770b29b2e0d2443407caf61; _ym_visorc=b; qrator_msid=1729866689.333.Ji8tvRKDjgadFiNb-ablknlgh28g2kh3rnbq6ifakmlou2kob',
+        'host': 'old.bankrot.fedresurs.ru',
+        'sec-ch-ua': '"Chromium";v="130", "Google Chrome";v="130", "Not?A_Brand";v="99"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-fetch-dest': 'document',
+        'sec-fetch-mode': 'navigate',
+        'sec-fetch-site': 'none',
+        'sec-fetch-user': '?1',
+        'upgrade-insecure-requests': '1',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
+    }
+    response = requests.get(link, headers=headers)
+    web_card = response.text
+    #print(web_card)
+    soup = BeautifulSoup(web_card, 'html.parser')
+    prsn_lastName = soup.find('span', id = 'ctl00_cphBody_lblLastName').text
+    print('prsn_lastName', prsn_lastName)
+    prsn_firstName = soup.find('span', id = 'ctl00_cphBody_lblFirstName').text
+    print('prsn_firstName', prsn_firstName)
+    prsn_middleName = soup.find('span', id = 'ctl00_cphBody_lblMiddleName').text
+    print('prsn_middleName', prsn_middleName)
+    prsn_birthdate = soup.find('span', id = 'ctl00_cphBody_lblBirthdate').text
+    print('prsn_birthdate', prsn_birthdate)
+    prsn_birthplace = soup.find('span', id = 'ctl00_cphBody_lblBirthplace').text
+    print('prsn_birthplace', prsn_birthplace)
+    prsn_caseRegion =  soup.find('span', id = 'ctl00_cphBody_lblRegion').text
+    print('prsn_caseRegion', prsn_caseRegion)
+    prsn_inn = soup.find('span', id = 'ctl00_cphBody_lblINN').text
+    print('prsn_inn', prsn_inn)
+    prsn_snils = soup.find('span', id = 'ctl00_cphBody_lblSNILS').text
+    print('prsn_snils', prsn_snils)
+    prsn_addres = soup.find('span', id = 'ctl00_cphBody_lblAddress').text
+    print('prsn_addres', prsn_addres)
+
+
+def get_person_old_link(soup):
     link = soup.find('table', class_ = 'bank').find('a')
     person_link = link.get(('href'))
     return(person_link)
