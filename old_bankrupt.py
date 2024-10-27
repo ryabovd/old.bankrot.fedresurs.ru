@@ -56,16 +56,18 @@ def check_debtors(debtors):
         time.sleep(asleep)
 
 
-data = {'name': [],
+data = {
+    'name': [],
+    'inn': [],
+    'snils': [],
+    'address': [],
+    'link_old_fedresurs': []
+    }
 #        'debt': [],
-        'procedure': [],
-        'case': [],
-        'link_fedresurs': [],
-#        'old_link_fedresurs': [],
+#        'procedure': [],
+#        'case': [],
+#        'link_fedresurs': [],
 #        'link_kad': [],
-        'inn': [],
-        'snils': [],
-        'address': []}
 
 
 def get_response(prslastname='', prsfirstname='', prsmiddlename='', regionid = '95'):
@@ -108,10 +110,10 @@ def get_response(prslastname='', prsfirstname='', prsmiddlename='', regionid = '
         #print(person_link)
         prsn_name, prsn_inn, prsn_snils, prsn_region, prsn_adress = parse_person_data(prsn_data_list)
         print(prsn_name, prsn_inn, prsn_snils, prsn_region, prsn_adress, person_old_link, sep='\n')
-        get_debtor_old_card(session, person_old_link)
+        get_debtor_old_card(person_old_link)
 
 
-def get_debtor_old_card(session, link):
+def get_debtor_old_card(person_old_link):
     headers = {
         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
         'accept-encoding': 'gzip, deflate, br, zstd',
@@ -130,28 +132,46 @@ def get_debtor_old_card(session, link):
         'upgrade-insecure-requests': '1',
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
     }
-    response = requests.get(link, headers=headers)
+    response = requests.get(person_old_link, headers=headers)
     web_card = response.text
     #print(web_card)
     soup = BeautifulSoup(web_card, 'html.parser')
     prsn_lastName = soup.find('span', id = 'ctl00_cphBody_lblLastName').text
-    print('prsn_lastName', prsn_lastName)
+#    print('prsn_lastName', prsn_lastName)
     prsn_firstName = soup.find('span', id = 'ctl00_cphBody_lblFirstName').text
-    print('prsn_firstName', prsn_firstName)
+#    print('prsn_firstName', prsn_firstName)
     prsn_middleName = soup.find('span', id = 'ctl00_cphBody_lblMiddleName').text
-    print('prsn_middleName', prsn_middleName)
+#    print('prsn_middleName', prsn_middleName)
     prsn_birthdate = soup.find('span', id = 'ctl00_cphBody_lblBirthdate').text
-    print('prsn_birthdate', prsn_birthdate)
+#    print('prsn_birthdate', prsn_birthdate)
     prsn_birthplace = soup.find('span', id = 'ctl00_cphBody_lblBirthplace').text
-    print('prsn_birthplace', prsn_birthplace)
+#    print('prsn_birthplace', prsn_birthplace)
     prsn_caseRegion =  soup.find('span', id = 'ctl00_cphBody_lblRegion').text
-    print('prsn_caseRegion', prsn_caseRegion)
+#    print('prsn_caseRegion', prsn_caseRegion)
     prsn_inn = soup.find('span', id = 'ctl00_cphBody_lblINN').text
-    print('prsn_inn', prsn_inn)
+#    print('prsn_inn', prsn_inn)
     prsn_snils = soup.find('span', id = 'ctl00_cphBody_lblSNILS').text
-    print('prsn_snils', prsn_snils)
-    prsn_addres = soup.find('span', id = 'ctl00_cphBody_lblAddress').text
-    print('prsn_addres', prsn_addres)
+#    print('prsn_snils', prsn_snils)
+    prsn_address = soup.find('span', id = 'ctl00_cphBody_lblAddress').text
+#    print('prsn_address', prsn_address)
+    prsn_fio = get_fio(prsn_lastName, prsn_firstName, prsn_middleName)
+#    print('fio', prsn_fio)
+    out_card = prsn_fio, person_old_link, prsn_inn, prsn_snils, prsn_address
+    fill_out_card(prsn_fio, person_old_link, prsn_inn, prsn_snils, prsn_address)
+
+
+def get_fio(prsn_lastName, prsn_firstName, prsn_middleName):
+    fio = prsn_lastName + ' ' + prsn_firstName + ' ' + prsn_middleName
+    return fio
+
+
+def fill_out_card(prsn_fio, person_old_link, prsn_inn, prsn_snils, prsn_address):
+    data['name'].append(prsn_fio)
+    data['snils'].append(prsn_snils)
+    data['inn'].append(prsn_inn)
+    data['address'].append(prsn_address)
+    data['link_old_fedresurs'].append(person_old_link)
+    #print('fill', data)
 
 
 def get_person_old_link(soup):
@@ -217,24 +237,18 @@ def start_time():
     return start_time
 
 
-data = {'name': [],
-#        'debt': [],
-        'procedure': [],
-        'case': [],
-        'link_fedresurs': [],
-#        'link_kad': [],
-        'inn': [],
-        'snils': [],
-        'address': []}
-
-
 def main():
     start = start_time()
     debtors = get_debtors()
     today_date = str(date_today())
     check_debtors(debtors)
-    process_time(start)
+#    print('data', data)
+    df = pd.DataFrame(data)
     filename = 'bankrots_' + today_date + '.xlsx'
+    df.to_excel(filename, index=False)
+    print(red_text + "Файл данных ЗАПИСАН" + end_text + "\n")
+    process_time(start)
+
     
     
 
